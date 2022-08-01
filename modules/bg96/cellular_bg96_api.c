@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <inttypes.h>
 
 #include "cellular_platform.h"
 #include "cellular_config.h"
@@ -433,7 +434,7 @@ static CellularError_t controlSignalStrengthIndication( CellularContext_t * pCon
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "AT+QINDCFG=\"csq\",%u", enable_value );
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "AT+QINDCFG=\"csq\",%"PRIu8, enable_value );
         pktStatus = _Cellular_AtcmdRequestWithCallback( pContext, atReqControlSignalStrengthIndication );
         cellularStatus = _Cellular_TranslatePktStatus( pktStatus );
     }
@@ -1194,7 +1195,7 @@ static CellularError_t buildSocketConnect( CellularSocketHandle_t socketHandle,
         }
         else
         {
-            ( void ) strcpy( protocol, "UDP SERVICE" );
+            ( void ) strcpy( protocol, "UDP" );
         }
 
         /* Form the AT command. */
@@ -1203,7 +1204,7 @@ static CellularError_t buildSocketConnect( CellularSocketHandle_t socketHandle,
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
         ( void ) snprintf( pCmdBuf, CELLULAR_AT_CMD_MAX_SIZE,
-                           "%s%d,%ld,\"%s\",\"%s\",%d,%d,%d",
+                           "%s%"PRIu8",%"PRIu32",\"%s\",\"%s\",%"PRIu16",%"PRIu16",%d",
                            "AT+QIOPEN=",
                            socketHandle->contextId,
                            socketHandle->socketId,
@@ -2079,7 +2080,7 @@ CellularError_t Cellular_SetDns( CellularHandle_t cellularHandle,
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_MAX_SIZE, "%s%d,\"%s\"", "AT+QIDNSCFG=", contextId, pDnsServerAddress );
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_MAX_SIZE, "%s%"PRIu8",\"%s\"", "AT+QIDNSCFG=", contextId, pDnsServerAddress );
         pktStatus = _Cellular_AtcmdRequestWithCallback( pContext, atReqSetDns );
 
         if( pktStatus != CELLULAR_PKT_STATUS_OK )
@@ -2248,7 +2249,7 @@ CellularError_t Cellular_SetPsmSettings( CellularHandle_t cellularHandle,
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_MAX_SIZE, "AT+QPSMS=%d,", pPsmSettings->mode );
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_MAX_SIZE, "AT+QPSMS=%"PRIu8",", pPsmSettings->mode );
         cmdBufLen = strlen( cmdBuf );
         cmdBufLen = cmdBufLen + appendBinaryPattern( &cmdBuf[ cmdBufLen ], ( CELLULAR_AT_CMD_MAX_SIZE - cmdBufLen ),
                                                      pPsmSettings->periodicRauValue, false );
@@ -2317,7 +2318,7 @@ CellularError_t Cellular_DeactivatePdn( CellularHandle_t cellularHandle,
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%d", "AT+QIDEACT=", contextId );
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%"PRIu8, "AT+QIDEACT=", contextId );
         pktStatus = _Cellular_TimeoutAtcmdRequestWithCallback( pContext, atReqDeactPdn, PDN_DEACTIVATION_PACKET_REQ_TIMEOUT_MS );
 
         if( pktStatus != CELLULAR_PKT_STATUS_OK )
@@ -2367,7 +2368,7 @@ CellularError_t Cellular_ActivatePdn( CellularHandle_t cellularHandle,
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%d", "AT+QIACT=", contextId );
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%"PRIu8, "AT+QIACT=", contextId );
         pktStatus = _Cellular_TimeoutAtcmdRequestWithCallback( pContext, atReqActPdn, PDN_ACTIVATION_PACKET_REQ_TIMEOUT_MS );
 
         if( pktStatus != CELLULAR_PKT_STATUS_OK )
@@ -2426,7 +2427,7 @@ CellularError_t Cellular_SetPdnConfig( CellularHandle_t cellularHandle,
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_MAX_SIZE, "%s%d,%d,\"%s\",\"%s\",\"%s\",%d",
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_MAX_SIZE, "%s%"PRIu8",%d,\"%s\",\"%s\",\"%s\",%d",
                            "AT+QICSGP=",
                            contextId,
                            pPdnConfig->pdnContextType,
@@ -2568,7 +2569,7 @@ CellularError_t Cellular_SocketRecv( CellularHandle_t cellularHandle,
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
         ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE,
-                           "%s%ld,%ld", "AT+QIRD=", socketHandle->socketId, recvLen );
+                           "%s%"PRIu32",%"PRIu32, "AT+QIRD=", socketHandle->socketId, recvLen );
         pktStatus = _Cellular_TimeoutAtcmdDataRecvRequestWithCallback( pContext,
                                                                        atReqSocketRecv, recvTimeout, socketRecvDataPrefix, NULL );
 
@@ -2653,7 +2654,7 @@ CellularError_t Cellular_SocketSend( CellularHandle_t cellularHandle,
         /* The return value of snprintf is not used.
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
-        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%ld,%ld",
+        ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%"PRIu32",%"PRIu32,
                            "AT+QISEND=", socketHandle->socketId, atDataReqSocketSend.dataLen );
 
         pktStatus = _Cellular_AtcmdDataSend( pContext, atReqSocketSend, atDataReqSocketSend,
@@ -2713,7 +2714,7 @@ CellularError_t Cellular_SocketClose( CellularHandle_t cellularHandle,
             /* The return value of snprintf is not used.
              * The max length of the string is fixed and checked offline. */
             /* coverity[misra_c_2012_rule_21_6_violation]. */
-            ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%ld", "AT+QICLOSE=", socketHandle->socketId );
+            ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_TYPICAL_MAX_SIZE, "%s%"PRIu32, "AT+QICLOSE=", socketHandle->socketId );
             pktStatus = _Cellular_TimeoutAtcmdRequestWithCallback( pContext, atReqSockClose,
                                                                    SOCKET_DISCONNECT_PACKET_REQ_TIMEOUT_MS );
 
@@ -3102,7 +3103,7 @@ CellularError_t Cellular_GetHostByName( CellularHandle_t cellularHandle,
          * The max length of the string is fixed and checked offline. */
         /* coverity[misra_c_2012_rule_21_6_violation]. */
         ( void ) snprintf( cmdBuf, CELLULAR_AT_CMD_QUERY_DNS_MAX_SIZE,
-                           "AT+QIDNSGIP=%u,\"%s\"", contextId, pcHostName );
+                           "AT+QIDNSGIP=%"PRIu8",\"%s\"", contextId, pcHostName );
         pktStatus = _Cellular_AtcmdRequestWithCallback( pContext, atReqQueryDns );
 
         if( pktStatus != CELLULAR_PKT_STATUS_OK )

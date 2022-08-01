@@ -98,6 +98,10 @@ static void _Cellular_SetShutdownCallback( CellularContext_t * pContext,
 
 /*-----------------------------------------------------------*/
 
+static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+/*-----------------------------------------------------------*/
+
 #if ( CELLULAR_CONFIG_STATIC_ALLOCATION_CONTEXT == 1 )
     static CellularContext_t cellularStaticContextTable[ CELLULAR_CONTEXT_MAX ] = { 0 };
 #endif
@@ -115,7 +119,7 @@ static CellularContext_t * _Cellular_AllocContext( void )
     CellularContext_t * pContext = NULL;
     uint8_t i = 0;
 
-    taskENTER_CRITICAL();
+    taskENTER_CRITICAL(&spinlock);
 
     for( i = 0; i < CELLULAR_CONTEXT_MAX; i++ )
     {
@@ -141,7 +145,7 @@ static CellularContext_t * _Cellular_AllocContext( void )
         }
     }
 
-    taskEXIT_CRITICAL();
+    taskEXIT_CRITICAL(&spinlock);
 
     return pContext;
 }
@@ -152,7 +156,7 @@ static void _Cellular_FreeContext( CellularContext_t * pContext )
 {
     uint8_t i = 0;
 
-    taskENTER_CRITICAL();
+    taskENTER_CRITICAL(&spinlock);
 
     for( i = 0; i < CELLULAR_CONTEXT_MAX; i++ )
     {
@@ -168,7 +172,7 @@ static void _Cellular_FreeContext( CellularContext_t * pContext )
         }
     }
 
-    taskEXIT_CRITICAL();
+    taskEXIT_CRITICAL(&spinlock);
 }
 
 /*-----------------------------------------------------------*/
@@ -535,7 +539,7 @@ CellularError_t _Cellular_CreateSocketData( CellularContext_t * pContext,
     CellularSocketContext_t * pSocketData = NULL;
     uint8_t socketId = 0;
 
-    taskENTER_CRITICAL();
+    taskENTER_CRITICAL(&spinlock);
 
     for( socketId = 0; socketId < CELLULAR_NUM_SOCKET_MAX; socketId++ )
     {
@@ -567,7 +571,7 @@ CellularError_t _Cellular_CreateSocketData( CellularContext_t * pContext,
         }
     }
 
-    taskEXIT_CRITICAL();
+    taskEXIT_CRITICAL(&spinlock);
 
     if( cellularStatus == CELLULAR_NO_MEMORY )
     {
@@ -599,7 +603,7 @@ CellularError_t _Cellular_RemoveSocketData( CellularContext_t * pContext,
         LogWarn( ( "_Cellular_RemoveSocket, socket is connecting state [%u]", socketHandle->socketId ) );
     }
 
-    taskENTER_CRITICAL();
+    taskENTER_CRITICAL(&spinlock);
 
     if( pContext != NULL )
     {
@@ -629,7 +633,7 @@ CellularError_t _Cellular_RemoveSocketData( CellularContext_t * pContext,
         cellularStatus = CELLULAR_INVALID_HANDLE;
     }
 
-    taskEXIT_CRITICAL();
+    taskEXIT_CRITICAL(&spinlock);
 
     return cellularStatus;
 }
