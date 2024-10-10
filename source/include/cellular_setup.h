@@ -11,13 +11,6 @@
 #include "cellular_config_defaults.h"
 #include "cellular_types.h"
 
-/* Secure socket needs application to provide the cellular handle and pdn context id. */
-/* User of secure sockets cellular should provide this variable. */
-CellularHandle_t CellularHandle;
-
-/* User of secure sockets cellular should provide this variable. */
-uint8_t CellularSocketPdnContextId;
-
 bool setupCellular( void );
 
 #endif
